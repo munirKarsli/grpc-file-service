@@ -1,8 +1,10 @@
 package com.gpch.grpc.fileservice;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.Empty;
 import com.gpch.grpc.protobuf.DataChunk;
 import com.gpch.grpc.protobuf.DownloadFileRequest;
+import com.gpch.grpc.protobuf.FileName;
 import com.gpch.grpc.protobuf.FileServiceGrpc;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -10,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.lognet.springboot.grpc.GRpcService;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,5 +50,24 @@ public class FileServiceImpl extends FileServiceGrpc.FileServiceImplBase {
                     .withCause(e)
                     .asException());
         }
+    }
+
+    @Override
+    public void getAvailableFiles(Empty request, StreamObserver<FileName> responseObserver) {
+        String[] pathnames;
+        File f = new File("files");
+        pathnames = f.list();
+        for (String pathname : pathnames) {
+            // Print the names of files and directories
+            System.out.println(pathname);
+
+            responseObserver.onNext(FileName.newBuilder().setFileName(pathname).build());
+
+        }
+
+        responseObserver.onCompleted();
+
+
+
     }
 }

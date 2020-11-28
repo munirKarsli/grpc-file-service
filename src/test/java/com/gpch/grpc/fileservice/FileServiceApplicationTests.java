@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.List;
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -45,6 +46,21 @@ public class FileServiceApplicationTests {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void getAvailableFiles(){
+
+        try{
+            List<String> fileList = fileServiceClient.getFiles();
+            log.info("File list has been downloaded ");
+            assert fileList.size() > 0;
+
+        }catch (Exception e){
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
     }
 
 

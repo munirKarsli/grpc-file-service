@@ -1,7 +1,9 @@
 package com.gpch.grpc.fileservice;
 
+import com.google.protobuf.Empty;
 import com.gpch.grpc.protobuf.DataChunk;
 import com.gpch.grpc.protobuf.DownloadFileRequest;
+import com.gpch.grpc.protobuf.FileName;
 import com.gpch.grpc.protobuf.FileServiceGrpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -12,6 +14,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +25,7 @@ public class FileServiceClient {
 
     private final FileServiceGrpc.FileServiceBlockingStub blockingStub;
     private final FileServiceGrpc.FileServiceStub nonBlockingStub;
+
 
     private ManagedChannel channel;
 
@@ -36,6 +41,53 @@ public class FileServiceClient {
         channel = channelBuilder.build();
         blockingStub = FileServiceGrpc.newBlockingStub(channel);
         nonBlockingStub = FileServiceGrpc.newStub(channel);
+    }
+
+    public List<String> getFiles(){
+
+        List<String> fileNames = new ArrayList<>();
+        final CountDownLatch finishLatch = new CountDownLatch(1);
+        final AtomicBoolean completed = new AtomicBoolean(false);
+
+        StreamObserver<FileName> streamObserver = new StreamObserver<FileName>() {
+            @Override
+            public void onNext(FileName value) {
+                try{
+                    fileNames.add(value.getFileName());
+                }catch (Exception e){
+                    log.error(e.getMessage());
+                }
+
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                log.error(t.getMessage());
+                finishLatch.countDown();
+            }
+
+            @Override
+            public void onCompleted() {
+                log.info("completed file names");
+                completed.compareAndSet(false, true);
+                finishLatch.countDown();
+            }
+        };
+
+
+        try {
+            nonBlockingStub.getAvailableFiles(Empty.newBuilder().build(), streamObserver);
+            finishLatch.await(5, TimeUnit.MINUTES);
+
+            if (!completed.get()) {
+                throw new Exception("The downloadFile() method did not complete");
+            }
+
+        } catch (Exception e) {
+            log.error("The getFiles() method did not complete");
+        }
+
+        return fileNames;
     }
 
     public ByteArrayOutputStream downloadFile(String fileName) {

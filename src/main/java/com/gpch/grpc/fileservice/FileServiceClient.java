@@ -74,7 +74,6 @@ public class FileServiceClient {
             }
         };
 
-
         try {
             nonBlockingStub.getAvailableFiles(Empty.newBuilder().build(), streamObserver);
             finishLatch.await(5, TimeUnit.MINUTES);
@@ -95,6 +94,8 @@ public class FileServiceClient {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         final CountDownLatch finishLatch = new CountDownLatch(1);
         final AtomicBoolean completed = new AtomicBoolean(false);
+
+        String path = "files/" + fileName;
 
         StreamObserver<DataChunk> streamObserver = new StreamObserver<DataChunk>() {
             @Override
@@ -125,7 +126,7 @@ public class FileServiceClient {
 
             DownloadFileRequest.Builder builder = DownloadFileRequest
                     .newBuilder()
-                    .setFileName(fileName);
+                    .setFileName(path);
 
             nonBlockingStub.downloadFile(builder.build(), streamObserver);
 

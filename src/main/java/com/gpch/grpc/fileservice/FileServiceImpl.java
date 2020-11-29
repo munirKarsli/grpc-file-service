@@ -58,16 +58,10 @@ public class FileServiceImpl extends FileServiceGrpc.FileServiceImplBase {
         File f = new File("files");
         pathnames = f.list();
         for (String pathname : pathnames) {
-            // Print the names of files and directories
-            System.out.println(pathname);
-
             responseObserver.onNext(FileName.newBuilder().setFileName(pathname).build());
-
         }
 
         responseObserver.onCompleted();
-
-
 
     }
 }

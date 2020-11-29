@@ -37,11 +37,11 @@ public class FileServiceApplicationTests {
     public void downloadFile() {
 
         try {
-            String fileName = "/Users/munir.karsli/Downloads/BLG.docx";
+            String fileName = "BLG.docx";
             ByteArrayOutputStream imageOutputStream = fileServiceClient.downloadFile(fileName);
             byte[] bytes = imageOutputStream.toByteArray();
             log.info("File has been downloaded ");
-            Assertions.assertThatCode(() -> Files.write(bytes, new File("/Users/munir.karsli/Desktop/personalProjects/BLG.docx"))).doesNotThrowAnyException();
+            Assertions.assertThatCode(() -> Files.write(bytes, new File("BLG.docx"))).doesNotThrowAnyException();
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
